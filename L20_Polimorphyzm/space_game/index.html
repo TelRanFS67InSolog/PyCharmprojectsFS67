@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚀 Космическая Экспедиция: Спасение Робота Бипа</title>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: rgba(26, 34, 56, 0.9);
+      --accent-cyan: #00f2fe;
+      --accent-purple: #9b51e0;
+      --accent-yellow: #fcd34d;
+      --accent-green: #10b981;
+      --accent-pink: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Звездный фон на canvas */
+    #space-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 820px;
+      width: 100%;
+      background: var(--card-bg);
+      border: 2px solid rgba(0, 242, 254, 0.3);
+      border-radius: 28px;
+      padding: 28px 32px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 242, 254, 0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    /* Заголовок и индикаторы */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mascot-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .mascot-avatar {
+      font-size: 2.2rem;
+      animation: float 2.5s ease-in-out infinite;
+      filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.5));
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-7px) rotate(3deg); }
+    }
+
+    .score-stars {
+      display: flex;
+      gap: 6px;
+      font-size: 1.5rem;
+    }
+
+    .star {
+      opacity: 0.25;
+      filter: grayscale(1);
+      transition: all 0.4s ease;
+    }
+
+    .star.earned {
+      opacity: 1;
+      filter: grayscale(0) drop-shadow(0 0 8px gold);
+      transform: scale(1.15);
+    }
+
+    /* Прогресс-бар */
+    .progress-track {
+      background: rgba(255, 255, 255, 0.1);
+      height: 12px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+      border-radius: 10px;
+      transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 0 12px var(--accent-cyan);
+    }
+
+    /* Текст задания */
+    .mission-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 10px rgba(0, 242, 254, 0.4);
+    }
+
+    .mission-speech {
+      background: rgba(0, 0, 0, 0.35);
+      border-left: 4px solid var(--accent-cyan);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 1.25rem;
+      line-height: 1.5;
+      color: #e2e8f0;
+      margin-bottom: 26px;
+      text-align: left;
+    }
+
+    /* Игровая зона */
+    .game-zone {
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    /* Варианты карточек и кнопок */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 16px;
+      width: 100%;
+    }
+
+    .opt-btn {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 18px 14px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .opt-btn:hover {
+      transform: translateY(-4px) scale(1.03);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 10px 25px rgba(0, 242, 254, 0.3);
+    }
+
+    .opt-btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .opt-btn.correct {
+      background: linear-gradient(145deg, #059669, #10b981) !important;
+      border-color: #34d399 !important;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.6) !important;
+      animation: pulse-correct 0.6s ease;
+    }
+
+    .opt-btn.wrong {
+      background: linear-gradient(145deg, #dc2626, #ef4444) !important;
+      border-color: #f87171 !important;
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes pulse-correct {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    /* Элементы специальных головоломок */
+    .sequence-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .seq-item {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--accent-yellow);
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.1);
+    }
+
+    .seq-item.missing {
+      background: rgba(0, 242, 254, 0.1);
+      border: 3px dashed var(--accent-cyan);
+      color: var(--accent-cyan);
+      animation: pulse-border 1.5s infinite;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { border-color: var(--accent-cyan); }
+      50% { border-color: var(--accent-pink); }
+    }
+
+    /* Интерактивные весы */
+    .scales-box {
+      width: 100%;
+      max-width: 520px;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .scales-vis {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      position: relative;
+      height: 130px;
+      padding-bottom: 20px;
+    }
+
+    .scales-beam {
+      position: absolute;
+      top: 40px;
+      left: 10%;
+      right: 10%;
+      height: 8px;
+      background: #64748b;
+      border-radius: 4px;
+      transition: transform 0.5s ease;
+    }
+
+    .scales-pivot {
+      position: absolute;
+      top: 36px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0; 
+      height: 0; 
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-bottom: 60px solid #94a3b8;
+    }
+
+    .scale-plate {
+      position: absolute;
+      width: 120px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid var(--accent-cyan);
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 1.1rem;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      top: 65px;
+    }
+
+    .scale-left { left: 8%; }
+    .scale-right { right: 8%; }
+
+    /* Панель подсказки и звука */
+    .footer-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hint-btn {
+      background: rgba(253, 211, 77, 0.15);
+      border: 1px solid var(--accent-yellow);
+      color: var(--accent-yellow);
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      transition: 0.2s;
+    }
+
+    .hint-btn:hover {
+      background: rgba(253, 211, 77, 0.3);
+      transform: scale(1.05);
+    }
+
+    .sound-toggle {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: 0.2s;
+    }
+
+    .sound-toggle:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Подсказка всплывающая */
+    .hint-box {
+      background: rgba(253, 211, 77, 0.12);
+      border: 1px dashed var(--accent-yellow);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #fef08a;
+      font-size: 1.05rem;
+      margin-bottom: 18px;
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Финальный экран победы */
+    .victory-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 10px;
+    }
+
+    .diploma {
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      border: 4px solid gold;
+      border-radius: 24px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 580px;
+      margin: 20px 0;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+      position: relative;
+    }
+
+    .diploma h2 {
+      font-size: 2.2rem;
+      color: gold;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .diploma p {
+      font-size: 1.2rem;
+      color: #e0e7ff;
+      margin: 8px 0;
+    }
+
+    .diploma .player-name {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #38bdf8;
+      border-bottom: 2px dashed #38bdf8;
+      display: inline-block;
+      padding: 0 20px;
+      margin: 14px 0;
+      cursor: pointer;
+    }
+
+    .action-btn {
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      border: none;
+      padding: 16px 36px;
+      border-radius: 16px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #0b0f19;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(0, 242, 254, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(0, 242, 254, 0.6);
+    }
+
+    /* Стартовый экран */
+    .start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 30px 10px;
+    }
+
+    .hero-img {
+      font-size: 6rem;
+      animation: float 2.5s ease-in-out infinite;
+      filter: drop-shadow(0 0 25px rgba(0, 242, 254, 0.6));
+    }
+
+    .name-input-box {
+      display: flex;
+      gap: 10px;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .name-input {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 2px solid rgba(0, 242, 254, 0.4);
+      background: rgba(15, 23, 42, 0.8);
+      color: #fff;
+      font-size: 1.2rem;
+      text-align: center;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .name-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Фон со звездами -->
+  <canvas id="space-bg"></canvas>
+  <!-- Конфетти для победы -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="container">
+    <!-- Шапка -->
+    <div class="header-bar">
+      <div class="mascot-badge">
+        <span class="mascot-avatar" id="mascot-face">🤖</span>
+        <div>
+          <div>Робот Бип</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Напарник исследователя</div>
+        </div>
+      </div>
+      <div class="score-stars" id="star-box">
+        <span class="star" id="star-0">⭐</span>
+        <span class="star" id="star-1">⭐</span>
+        <span class="star" id="star-2">⭐</span>
+        <span class="star" id="star-3">⭐</span>
+        <span class="star" id="star-4">⭐</span>
+        <span class="star" id="star-5">⭐</span>
+      </div>
+    </div>
+
+    <!-- Индикатор прогресса -->
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-bar"></div>
+    </div>
+
+    <!-- 1. СТАРТОВЫЙ ЭКРАН -->
+    <div id="screen-start" class="start-screen">
+      <div class="hero-img">🚀</div>
+      <h1 class="mission-title" style="font-size: 2.3rem;">КОСМИЧЕСКАЯ ЭКСПЕДИЦИЯ</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8; max-width: 550px; line-height: 1.6;">
+        Привет, космический рейнджер! Наш исследовательский робот Бип потерял координаты пути домой. 
+        Помоги ему решить 6 логических задач и запустить гипердвигатель!
+      </p>
+
+      <div class="name-input-box">
+        <input type="text" id="player-name-input" class="name-input" placeholder="Твоё имя, капитан" value="Капитан">
+      </div>
+
+      <button class="action-btn" id="start-game-btn" onclick="startGame()">
+        ПОЕХАЛИ! 🎮
+      </button>
+    </div>
+
+    <!-- 2. ИГРОВОЙ ЭКРАН -->
+    <div id="screen-game" style="display: none;">
+      <h2 class="mission-title" id="stage-title">Уровень 1: Топливный шифр</h2>
+      
+      <div class="mission-speech" id="stage-desc">
+        Помоги ракете заправиться! Найди закономерность и выбери недостающий кристалл.
+      </div>
+
+      <div id="hint-display" class="hint-box"></div>
+
+      <!-- Зона конкретного задания -->
+      <div class="game-zone" id="dynamic-game-area">
+        <!-- Генерируется скриптом -->
+      </div>
+
+      <!-- Варианты ответов -->
+      <div class="options-grid" id="options-container">
+        <!-- Кнопки с вариантами -->
+      </div>
+
+      <div class="footer-bar">
+        <button class="hint-btn" onclick="toggleHint()">
+          💡 Подсказка Бипа
+        </button>
+        <button class="sound-toggle" id="sound-btn" onclick="toggleSound()">
+          🔊
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. ФИНАЛЬНЫЙ ЭКРАН ПОБЕДЫ -->
+    <div id="screen-victory" class="victory-screen">
+      <div style="font-size: 5rem; animation: float 2s infinite;">🏆</div>
+      <h1 class="mission-title" style="color: gold; font-size: 2.4rem;">МИССИЯ ВЫПОЛНЕНА!</h1>
+      
+      <div class="diploma">
+        <h2>★ ДИПЛОМ ★</h2>
+        <p>Настоящим подтверждается, что космический герой</p>
+        <div class="player-name" id="diploma-name">КАПИТАН</div>
+        <p>успешно расшифровал все коды, проявил смекалку и острый ум и спас планету роботов!</p>
+        <div style="margin-top: 15px; font-weight: bold; color: #a5b4fc;">
+          Звание: Магистр Логики 1-го ранга 🎖️
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+        <button class="action-btn" onclick="restartGame()">
+          ИГРАТЬ СНОВА 🔄
+        </button>
+        <button class="action-btn" style="background: linear-gradient(90deg, #ec4899, #8b5cf6); color: white;" onclick="window.print()">
+          ПЕЧАТЬ ДИПЛОМА 🖨️
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* ==========================================================
+       ЗВУКОВОЙ ДВИЖОК (Web Audio API - чистый синтезатор, без файлов)
+       ========================================================== */
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.15, delay = 0) {
+      if (!soundEnabled || !audioCtx) return;
+      setTimeout(() => {
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        } catch (e) {
+          console.log(e);
+        }
+      }, delay * 1000);
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      initAudio();
+      if (type === 'click') {
+        playTone(400, 'triangle', 0.05);
+      } else if (type === 'correct') {
+        playTone(523.25, 'sine', 0.12, 0);       // C5
+        playTone(659.25, 'sine', 0.12, 0.1);     // E5
+        playTone(783.99, 'sine', 0.18, 0.2);     // G5
+        playTone(1046.50, 'triangle', 0.35, 0.3);// C6
+      } else if (type === 'wrong') {
+        playTone(220, 'sawtooth', 0.18, 0);
+        playTone(180, 'sawtooth', 0.25, 0.12);
+      } else if (type === 'victory') {
+        const notes = [523, 659, 784, 1046, 784, 1046];
+        notes.forEach((n, idx) => playTone(n, 'triangle', 0.2, idx * 0.14));
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-btn').textContent = soundEnabled ? '🔊' : '🔇';
+    }
+
+    /* ==========================================================
+       ЗАДАЧИ И УРОВНИ ДЛЯ МАЛЬЧИКА 7 ЛЕТ (Логика, Смекалка, Счет)
+       ========================================================== */
+    let playerName = "Капитан";
+    let currentLevel = 0;
+    let earnedStars = 0;
+
+    const levels = [
+      {
+        title: "Уровень 1: Числовой шифр топлива ⛽",
+        desc: "Каждая ступень ракеты расходует топливо по особому секретному правилу. Какое число должно стоять на месте знака вопроса?",
+        hint: "Посмотри внимательно: каждое следующее число увеличивается ровно на 3! (3, 6, 9, 12...)",
+        renderGame() {
+          return `
+            <div class="sequence-row">
+              <div class="seq-item">3</div>
+              <div class="seq-item">6</div>
+              <div class="seq-item">9</div>
+              <div class="seq-item">12</div>
+              <div class="seq-item missing">❓</div>
+            </div>
+            <div style="color: #94a3b8; font-size: 1.1rem;">Какое число следующее в ряду?</div>
+          `;
+        },
+        options: [
+          { text: "14", isCorrect: false },
+          { text: "15", isCorrect: true },
+          { text: "16", isCorrect: false },
+          { text: "13", isCorrect: false }
+        ]
+      },
+      {
+        title: "Уровень 2: Космические Весы ⚖️",
+        desc: "Роботу нужно уравновесить отсеки корабля! Смотри: 1 Синий Робот весит ровно столько же, сколько 2 Красных Кристалла.",
+        hint: "Если 1 Робот = 2 Кристалла, то сколько кристаллов уравновесят ДВУХ таких роботов?",
+        renderGame() {
+          return `
+            <div class="scales-box">
+              <div style="font-size: 1.2rem; margin-bottom: 8px;">
+                Правило: 🤖 = 💎 💎
+              </div>
+              <div class="scales-vis">
+                <div class="scales-beam"></div>
+                <div class="scales-pivot"></div>
+                <div class="scale-plate scale-left">🤖 🤖</div>
+                <div class="scale-plate scale-right">❓ ❓</div>
+              </div>
+            </div>
+            <div style="color: #94a3b8; font-size: 1.1rem;">Сколько кристаллов 💎 нужно положить на правую чашу?</div>
+          `;
+        },
+        options: [
+          { text: "3 кристалла (💎💎💎)", isCorrect: false },
+          { text: "4 кристалла (💎💎💎💎)", isCorrect: true },
+          { text: "5 кристаллов (💎💎💎💎💎)", isCorrect: false },
+          { text: "2 кристалла (💎💎)", isCorrect: false }
+        ]
+      },
+      {
+        title: "Уровень 3: Загадка на сообразительность 💡",
+        desc: "Космический Сфинкс охраняет звездные врата и задал хитрый вопрос. Будь внимателен, тут есть ловушка!",
+        hint: "Подумай: если палочку разломать пополам, у половинки всё равно останутся два конца!",
+        renderGame() {
+          return `
+            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; max-width: 500px; margin-bottom: 15px;">
+              <div style="font-size: 2.8rem; margin-bottom: 10px;">🥢 🥢 🥢</div>
+              <div style="font-size: 1.3rem; font-weight: 700; color: #fcd34d;">
+                Сколько всего концов у двух с половиной палочек?
+              </div>
+            </div>
+          `;
+        },
+        options: [
+          { text: "5 концов", isCorrect: false },
+          { text: "6 концов", isCorrect: true },
+          { text: "4 конца", isCorrect: false },
+          { text: "2 конца", isCorrect: false }
+        ]
+      },
+      {
+        title: "Уровень 4: Закономерность планет 🪐",
+        desc: "Астронавигатор перепутал символы на карте созвездий! Найди правильный символ, который повторяется по строгому ритму.",
+        hint: "Повторяй вслух ритм: Солнце, Луна, Звезда... Солнце, Луна, Звезда... Что идет после Солнца?",
+        renderGame() {
+          return `
+            <div class="sequence-row">
+              <div class="seq-item" style="font-size: 2.2rem;">☀️</div>
+              <div class="seq-item" style="font-size: 2.2rem;">🌙</div>
+              <div class="seq-item" style="font-size: 2.2rem;">⭐</div>
+              <div class="seq-item" style="font-size: 2.2rem;">☀️</div>
+              <div class="seq-item missing">❓</div>
+              <div class="seq-item" style="font-size: 2.2rem;">⭐</div>
+            </div>
+            <div style="color: #94a3b8; font-size: 1.1rem;">Какой космический объект должен быть на месте вопроса?</div>
+          `;
+        },
+        options: [
+          { text: "☀️ Солнце", isCorrect: false },
+          { text: "🌙 Луна", isCorrect: true },
+          { text: "⭐ Звезда", isCorrect: false },
+          { text: "🚀 Ракета", isCorrect: false }
+        ]
+      },
+      {
+        title: "Уровень 5: Детективный шифр Бипа 🕵️‍♂️",
+        desc: "Бип спрятал ключ в сейф с 4 уликами. Проверь улики и вычисли секретную цифру от 1 до 9!",
+        hint: "Четные числа от 4 до 8 — это 6 и 8. Но подсказка прямо говорит: 'Я не 8'!",
+        renderGame() {
+          return `
+            <div style="background: rgba(15,23,42,0.8); border: 2px solid var(--accent-purple); border-radius: 18px; padding: 18px; max-width: 520px; text-align: left;">
+              <div style="color: #c084fc; font-weight: 800; font-size: 1.15rem; margin-bottom: 8px;">📋 УЛИКИ ДЕТЕКТИВА:</div>
+              <p>1. Это число <b>больше 4</b>, но <b>меньше 8</b>.</p>
+              <p>2. Это число <b>чётное</b> (делится пополам без остатка).</p>
+              <p>3. Это число <b>не 8</b>.</p>
+            </div>
+          `;
+        },
+        options: [
+          { text: "Цифра 5", isCorrect: false },
+          { text: "Цифра 6", isCorrect: true },
+          { text: "Цифра 7", isCorrect: false },
+          { text: "Цифра 8", isCorrect: false }
+        ]
+      },
+      {
+        title: "Уровень 6: Финальный гипер-запуск! 🚀",
+        desc: "Последняя головоломка капитана! У космического корабля 4 иллюминатора. В каждом сидит по инопланетянину, и у каждого на плече по 2 космических хомячка. Сколько хомячков на корабле?",
+        hint: "4 инопланетянина, у каждого по 2 хомячка: 2 + 2 + 2 + 2 = ?",
+        renderGame() {
+          return `
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 15px;">
+              <div class="seq-item" style="font-size: 1.8rem; width: 85px; height: 85px;">👽🐹🐹</div>
+              <div class="seq-item" style="font-size: 1.8rem; width: 85px; height: 85px;">👽🐹🐹</div>
+              <div class="seq-item" style="font-size: 1.8rem; width: 85px; height: 85px;">👽🐹🐹</div>
+              <div class="seq-item" style="font-size: 1.8rem; width: 85px; height: 85px;">👽🐹🐹</div>
+            </div>
+            <div style="color: #94a3b8; font-size: 1.15rem;">Посчитай только хомячков 🐹!</div>
+          `;
+        },
+        options: [
+          { text: "6 хомячков", isCorrect: false },
+          { text: "8 хомячков", isCorrect: true },
+          { text: "10 хомячков", isCorrect: false },
+          { text: "4 хомячка", isCorrect: false }
+        ]
+      }
+    ];
+
+    /* ==========================================================
+       УПРАВЛЕНИЕ ИГРОВЫМ ПРОЦЕССОМ
+       ========================================================== */
+    function startGame() {
+      initAudio();
+      playSound('click');
+      const input = document.getElementById('player-name-input');
+      if (input.value.trim()) {
+        playerName = input.value.trim();
+      }
+      document.getElementById('screen-start').style.display = 'none';
+      document.getElementById('screen-game').style.display = 'block';
+      currentLevel = 0;
+      earnedStars = 0;
+      loadLevel(0);
+    }
+
+    function loadLevel(idx) {
+      if (idx >= levels.length) {
+        showVictory();
+        return;
+      }
+
+      const lvl = levels[idx];
+      document.getElementById('stage-title').textContent = lvl.title;
+      document.getElementById('stage-desc').innerHTML = lvl.desc;
+      document.getElementById('dynamic-game-area').innerHTML = lvl.renderGame();
+
+      // Скрыть подсказку
+      const hintBox = document.getElementById('hint-display');
+      hintBox.style.display = 'none';
+      hintBox.textContent = lvl.hint;
+
+      // Обновить прогресс
+      const pct = (idx / levels.length) * 100;
+      document.getElementById('progress-bar').style.width = pct + '%';
+
+      // Отрисовать варианты
+      const optsBox = document.getElementById('options-container');
+      optsBox.innerHTML = '';
+
+      // Перемешаем кнопки для интереса
+      const shuffled = [...lvl.options].sort(() => Math.random() - 0.5);
+
+      shuffled.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerHTML = opt.text;
+        btn.onclick = () => handleAnswer(btn, opt.isCorrect);
+        optsBox.appendChild(btn);
+      });
+
+      // Реакция Бипа
+      document.getElementById('mascot-face').textContent = '🤖';
+    }
+
+    function toggleHint() {
+      playSound('click');
+      const box = document.getElementById('hint-display');
+      if (box.style.display === 'block') {
+        box.style.display = 'none';
+      } else {
+        box.style.display = 'block';
+        document.getElementById('mascot-face').textContent = '🧐';
+      }
+    }
+
+    let isProcessing = false;
+
+    function handleAnswer(btn, isCorrect) {
+      if (isProcessing) return;
+
+      if (isCorrect) {
+        isProcessing = true;
+        btn.classList.add('correct');
+        playSound('correct');
+        document.getElementById('mascot-face').textContent = '🥳';
+
+        // Дать звезду
+        const star = document.getElementById(`star-${currentLevel}`);
+        if (star) star.classList.add('earned');
+        earnedStars++;
+
+        // Блокируем остальные кнопки
+        const allBtns = document.querySelectorAll('.opt-btn');
+        allBtns.forEach(b => b.disabled = true);
+
+        setTimeout(() => {
+          currentLevel++;
+          isProcessing = false;
+          loadLevel(currentLevel);
+        }, 1100);
+
+      } else {
+        btn.classList.add('wrong');
+        playSound('wrong');
+        document.getElementById('mascot-face').textContent = '🤔';
+        
+        // Показать подсказку автоматически при ошибке
+        document.getElementById('hint-display').style.display = 'block';
+
+        setTimeout(() => {
+          btn.classList.remove('wrong');
+        }, 600);
+      }
+    }
+
+    function showVictory() {
+      playSound('victory');
+      document.getElementById('progress-bar').style.width = '100%';
+      document.getElementById('screen-game').style.display = 'none';
+      document.getElementById('screen-victory').style.display = 'flex';
+      document.getElementById('diploma-name').textContent = playerName.toUpperCase();
+      document.getElementById('mascot-face').textContent = '🚀';
+
+      // Запуск конфетти!
+      startConfetti();
+    }
+
+    function restartGame() {
+      playSound('click');
+      for (let i = 0; i < levels.length; i++) {
+        const s = document.getElementById(`star-${i}`);
+        if (s) s.classList.remove('earned');
+      }
+      document.getElementById('screen-victory').style.display = 'none';
+      document.getElementById('screen-start').style.display = 'flex';
+      stopConfetti();
+    }
+
+    /* ==========================================================
+       ЗВЕЗДНЫЙ ФОН НА CANVAS
+       ========================================================== */
+    const spaceCanvas = document.getElementById('space-bg');
+    const spaceCtx = spaceCanvas.getContext('2d');
+    let stars = [];
+
+    function resizeSpace() {
+      spaceCanvas.width = window.innerWidth;
+      spaceCanvas.height = window.innerHeight;
+      stars = [];
+      const numStars = Math.floor((spaceCanvas.width * spaceCanvas.height) / 3200);
+      for (let i = 0; i < numStars; i++) {
+        stars.push({
+          x: Math.random() * spaceCanvas.width,
+          y: Math.random() * spaceCanvas.height,
+          radius: Math.random() * 1.6 + 0.4,
+          alpha: Math.random(),
+          speed: Math.random() * 0.02 + 0.005
+        });
+      }
+    }
+    window.addEventListener('resize', resizeSpace);
+    resizeSpace();
+
+    function animateSpace() {
+      spaceCtx.clearRect(0, 0, spaceCanvas.width, spaceCanvas.height);
+      stars.forEach(s => {
+        s.alpha += s.speed;
+        const currentAlpha = Math.abs(Math.sin(s.alpha));
+        spaceCtx.fillStyle = `rgba(255, 255, 255, ${currentAlpha * 0.8 + 0.2})`;
+        spaceCtx.beginPath();
+        spaceCtx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        spaceCtx.fill();
+      });
+      requestAnimationFrame(animateSpace);
+    }
+    animateSpace();
+
+    /* ==========================================================
+       КОНФЕТТИ АНИМАЦИЯ (ДЛЯ ПОБЕДЫ)
+       ========================================================== */
+    const confCanvas = document.getElementById('confetti-canvas');
+    const confCtx = confCanvas.getContext('2d');
+    let confettiList = [];
+    let confettiRunning = false;
+
+    function startConfetti() {
+      confCanvas.width = window.innerWidth;
+      confCanvas.height = window.innerHeight;
+      confettiList = [];
+      const colors = ['#00f2fe', '#fcd34d', '#ec4899', '#10b981', '#9b51e0', '#f59e0b'];
+      for (let i = 0; i < 140; i++) {
+        confettiList.push({
+          x: Math.random() * confCanvas.width,
+          y: Math.random() * -confCanvas.height,
+          size: Math.random() * 8 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: Math.random() * 4 - 2,
+          vy: Math.random() * 4 + 3,
+          rot: Math.random() * 360,
+          dRot: Math.random() * 6 - 3
+        });
+      }
+      confettiRunning = true;
+      animateConfetti();
+    }
+
+    function stopConfetti() {
+      confettiRunning = false;
+      confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+    }
+
+    function animateConfetti() {
+      if (!confettiRunning) return;
+      confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+      confettiList.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.dRot;
+        if (p.y > confCanvas.height) {
+          p.y = -10;
+          p.x = Math.random() * confCanvas.width;
+        }
+        confCtx.save();
+        confCtx.translate(p.x, p.y);
+        confCtx.rotate((p.rot * Math.PI) / 180);
+        confCtx.fillStyle = p.color;
+        confCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        confCtx.restore();
+      });
+      requestAnimationFrame(animateConfetti);
+    }
+  </script>
+</body>
+</html>
